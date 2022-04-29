@@ -37,7 +37,6 @@ int main(void)
 	DS3231_begin();
 	while (1) 
 	{
-		// lol
 		currentTime = millis();
 		printData();
 	}

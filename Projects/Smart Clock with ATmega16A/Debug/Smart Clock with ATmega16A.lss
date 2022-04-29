@@ -96,12 +96,6 @@ Disassembly of section .text:
       8e:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
 00000092 <handleSpeed>:
-    TWI_write(address >> 8);
-    TWI_write(address);
-    TWI_write(data);
-    TWI_endTransmission();
-    _delay_ms(5);
-}
       92:	88 31       	cpi	r24, 0x18	; 24
       94:	49 f0       	breq	.+18     	; 0xa8 <handleSpeed+0x16>
       96:	88 34       	cpi	r24, 0x48	; 72
@@ -768,48 +762,29 @@ Disassembly of section .text:
      608:	08 95       	ret
 
 0000060a <AT24C32_read>:
-Purpose:  Read byte of data from a specific address
-Input:    Address and pointer to data
-Return:   None
-*********************************************/
-void AT24C32_read(uint8_t address, uint8_t* data)
-{
      60a:	1f 93       	push	r17
      60c:	cf 93       	push	r28
      60e:	df 93       	push	r29
      610:	18 2f       	mov	r17, r24
      612:	eb 01       	movw	r28, r22
-    TWI_beginTransmission(AT24C32_ADDRESS);
      614:	80 e5       	ldi	r24, 0x50	; 80
      616:	0e 94 78 00 	call	0xf0	; 0xf0 <TWI_beginTransmission>
-    TWI_write(address >> 8);
      61a:	80 e0       	ldi	r24, 0x00	; 0
      61c:	0e 94 85 00 	call	0x10a	; 0x10a <TWI_write>
-    TWI_write(address);
      620:	81 2f       	mov	r24, r17
      622:	0e 94 85 00 	call	0x10a	; 0x10a <TWI_write>
-    TWI_requestFrom(AT24C32_ADDRESS);
      626:	80 e5       	ldi	r24, 0x50	; 80
      628:	0e 94 8c 00 	call	0x118	; 0x118 <TWI_requestFrom>
-    *data = TWI_read(TWI_NACK);
      62c:	80 e0       	ldi	r24, 0x00	; 0
      62e:	0e 94 9c 00 	call	0x138	; 0x138 <TWI_read>
      632:	88 83       	st	Y, r24
-    TWI_endTransmission();
      634:	0e 94 ad 00 	call	0x15a	; 0x15a <TWI_endTransmission>
-}
      638:	df 91       	pop	r29
      63a:	cf 91       	pop	r28
      63c:	1f 91       	pop	r17
      63e:	08 95       	ret
 
 00000640 <printData>:
-		printData();
-	}
-}
-
-void printData(void)
-{
      640:	0f 93       	push	r16
      642:	1f 93       	push	r17
      644:	cf 93       	push	r28
@@ -822,7 +797,6 @@ void printData(void)
      652:	de bf       	out	0x3e, r29	; 62
      654:	0f be       	out	0x3f, r0	; 63
      656:	cd bf       	out	0x3d, r28	; 61
-	DS3231_getTime(&rtc.hour, &rtc.minute, &rtc.second);
      658:	4c ef       	ldi	r20, 0xFC	; 252
      65a:	50 e0       	ldi	r21, 0x00	; 0
      65c:	6d ef       	ldi	r22, 0xFD	; 253
@@ -830,7 +804,6 @@ void printData(void)
      660:	8e ef       	ldi	r24, 0xFE	; 254
      662:	90 e0       	ldi	r25, 0x00	; 0
      664:	0e 94 76 02 	call	0x4ec	; 0x4ec <DS3231_getTime>
-	DS3231_getDate(&rtc.day, &rtc.month, &rtc.year);
      668:	42 e0       	ldi	r20, 0x02	; 2
      66a:	51 e0       	ldi	r21, 0x01	; 1
      66c:	61 e0       	ldi	r22, 0x01	; 1
@@ -838,15 +811,12 @@ void printData(void)
      670:	80 e0       	ldi	r24, 0x00	; 0
      672:	91 e0       	ldi	r25, 0x01	; 1
      674:	0e 94 a6 02 	call	0x54c	; 0x54c <DS3231_getDate>
-	DS3231_getDayOfWeek(&rtc.dayOfWeek);
      678:	8f ef       	ldi	r24, 0xFF	; 255
      67a:	90 e0       	ldi	r25, 0x00	; 0
      67c:	0e 94 d5 02 	call	0x5aa	; 0x5aa <DS3231_getDayOfWeek>
-	DS3231_getTemperature(&rtc.temperature);
      680:	83 e0       	ldi	r24, 0x03	; 3
      682:	91 e0       	ldi	r25, 0x01	; 1
      684:	0e 94 ec 02 	call	0x5d8	; 0x5d8 <DS3231_getTemperature>
-	if (currentTime - lastSecond > 1000UL)
      688:	80 91 06 01 	lds	r24, 0x0106	; 0x800106 <currentTime>
      68c:	90 91 07 01 	lds	r25, 0x0107	; 0x800107 <currentTime+0x1>
      690:	a0 91 08 01 	lds	r26, 0x0108	; 0x800108 <currentTime+0x2>
@@ -869,13 +839,10 @@ void printData(void)
      6be:	71 05       	cpc	r23, r1
      6c0:	08 f4       	brcc	.+2      	; 0x6c4 <printData+0x84>
      6c2:	81 c0       	rjmp	.+258    	; 0x7c6 <printData+0x186>
-	{
-		lastSecond = currentTime;
      6c4:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <lastSecond>
      6c8:	90 93 65 00 	sts	0x0065, r25	; 0x800065 <lastSecond+0x1>
      6cc:	a0 93 66 00 	sts	0x0066, r26	; 0x800066 <lastSecond+0x2>
      6d0:	b0 93 67 00 	sts	0x0067, r27	; 0x800067 <lastSecond+0x3>
-		LCDTWI_setCursor(0, 0); LCDTWI_printf("Time: ");
      6d4:	60 e0       	ldi	r22, 0x00	; 0
      6d6:	80 e0       	ldi	r24, 0x00	; 0
      6d8:	0e 94 18 02 	call	0x430	; 0x430 <LCDTWI_setCursor>
@@ -884,7 +851,6 @@ void printData(void)
      6e0:	9f 93       	push	r25
      6e2:	8f 93       	push	r24
      6e4:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		(rtc.hour < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d:", rtc.hour);
      6e8:	80 91 fe 00 	lds	r24, 0x00FE	; 0x8000fe <rtc+0x2>
      6ec:	0f 90       	pop	r0
      6ee:	0f 90       	pop	r0
@@ -908,7 +874,6 @@ void printData(void)
      714:	9f 93       	push	r25
      716:	8f 93       	push	r24
      718:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		(rtc.minute < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d:", rtc.minute);
      71c:	f8 01       	movw	r30, r16
      71e:	81 81       	ldd	r24, Z+1	; 0x01
      720:	0f 90       	pop	r0
@@ -935,7 +900,6 @@ void printData(void)
      74c:	9f 93       	push	r25
      74e:	8f 93       	push	r24
      750:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		(rtc.second < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d", rtc.second);
      754:	f8 01       	movw	r30, r16
      756:	80 81       	ld	r24, Z
      758:	0f 90       	pop	r0
@@ -962,7 +926,6 @@ void printData(void)
      784:	9f 93       	push	r25
      786:	8f 93       	push	r24
      788:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		LCDTWI_setCursor(0, 3); LCDTWI_printf("Temperature: ");
      78c:	63 e0       	ldi	r22, 0x03	; 3
      78e:	80 e0       	ldi	r24, 0x00	; 0
      790:	0e 94 18 02 	call	0x430	; 0x430 <LCDTWI_setCursor>
@@ -971,7 +934,6 @@ void printData(void)
      798:	9f 93       	push	r25
      79a:	8f 93       	push	r24
      79c:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		LCDTWI_printf("%dC", rtc.temperature);
      7a0:	f8 01       	movw	r30, r16
      7a2:	87 81       	ldd	r24, Z+7	; 0x07
      7a4:	28 2f       	mov	r18, r24
@@ -990,8 +952,6 @@ void printData(void)
      7c0:	de bf       	out	0x3e, r29	; 62
      7c2:	0f be       	out	0x3f, r0	; 63
      7c4:	cd bf       	out	0x3d, r28	; 61
-	}
-	if (currentTime - lastTenSeconds > 10000UL)
      7c6:	80 91 06 01 	lds	r24, 0x0106	; 0x800106 <currentTime>
      7ca:	90 91 07 01 	lds	r25, 0x0107	; 0x800107 <currentTime+0x1>
      7ce:	a0 91 08 01 	lds	r26, 0x0108	; 0x800108 <currentTime+0x2>
@@ -1014,13 +974,10 @@ void printData(void)
      7fc:	71 05       	cpc	r23, r1
      7fe:	08 f4       	brcc	.+2      	; 0x802 <printData+0x1c2>
      800:	a9 c0       	rjmp	.+338    	; 0x954 <printData+0x314>
-	{
-		lastTenSeconds = currentTime;
      802:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
      806:	90 93 61 00 	sts	0x0061, r25	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
      80a:	a0 93 62 00 	sts	0x0062, r26	; 0x800062 <__DATA_REGION_ORIGIN__+0x2>
      80e:	b0 93 63 00 	sts	0x0063, r27	; 0x800063 <__DATA_REGION_ORIGIN__+0x3>
-		LCDTWI_setCursor(0, 1); LCDTWI_printf("Date: ");
      812:	61 e0       	ldi	r22, 0x01	; 1
      814:	80 e0       	ldi	r24, 0x00	; 0
      816:	0e 94 18 02 	call	0x430	; 0x430 <LCDTWI_setCursor>
@@ -1029,7 +986,6 @@ void printData(void)
      81e:	9f 93       	push	r25
      820:	8f 93       	push	r24
      822:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		(rtc.day < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d/", rtc.day);
      826:	80 91 00 01 	lds	r24, 0x0100	; 0x800100 <rtc+0x4>
      82a:	0f 90       	pop	r0
      82c:	0f 90       	pop	r0
@@ -1053,7 +1009,6 @@ void printData(void)
      852:	9f 93       	push	r25
      854:	8f 93       	push	r24
      856:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		(rtc.month < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d/", rtc.month);
      85a:	f8 01       	movw	r30, r16
      85c:	85 81       	ldd	r24, Z+5	; 0x05
      85e:	0f 90       	pop	r0
@@ -1080,7 +1035,6 @@ void printData(void)
      88a:	9f 93       	push	r25
      88c:	8f 93       	push	r24
      88e:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		(rtc.year < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d", rtc.year);
      892:	f8 01       	movw	r30, r16
      894:	86 81       	ldd	r24, Z+6	; 0x06
      896:	0f 90       	pop	r0
@@ -1107,7 +1061,6 @@ void printData(void)
      8c2:	9f 93       	push	r25
      8c4:	8f 93       	push	r24
      8c6:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		LCDTWI_setCursor(0, 2); LCDTWI_printf("DoW: ");
      8ca:	62 e0       	ldi	r22, 0x02	; 2
      8cc:	80 e0       	ldi	r24, 0x00	; 0
      8ce:	0e 94 18 02 	call	0x430	; 0x430 <LCDTWI_setCursor>
@@ -1116,7 +1069,6 @@ void printData(void)
      8d6:	9f 93       	push	r25
      8d8:	8f 93       	push	r24
      8da:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		const char daysOfWeek[7][9] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
      8de:	8f e3       	ldi	r24, 0x3F	; 63
      8e0:	e8 e6       	ldi	r30, 0x68	; 104
      8e2:	f0 e0       	ldi	r31, 0x00	; 0
@@ -1126,7 +1078,6 @@ void printData(void)
      8ea:	0d 92       	st	X+, r0
      8ec:	8a 95       	dec	r24
      8ee:	e1 f7       	brne	.-8      	; 0x8e8 <printData+0x2a8>
-		LCDTWI_printf("%s", daysOfWeek[rtc.dayOfWeek]);
      8f0:	f8 01       	movw	r30, r16
      8f2:	83 81       	ldd	r24, Z+3	; 0x03
      8f4:	90 e0       	ldi	r25, 0x00	; 0
@@ -1152,12 +1103,10 @@ void printData(void)
      91c:	9f 93       	push	r25
      91e:	8f 93       	push	r24
      920:	0e 94 41 02 	call	0x482	; 0x482 <LCDTWI_printf>
-		AT24C32_read(0x00, &rd);
      924:	64 e0       	ldi	r22, 0x04	; 4
      926:	71 e0       	ldi	r23, 0x01	; 1
      928:	80 e0       	ldi	r24, 0x00	; 0
      92a:	0e 94 05 03 	call	0x60a	; 0x60a <AT24C32_read>
-		LCDTWI_setCursor(15, 0); LCDTWI_printf("0x%X", rd);
      92e:	60 e0       	ldi	r22, 0x00	; 0
      930:	8f e0       	ldi	r24, 0x0F	; 15
      932:	0e 94 18 02 	call	0x430	; 0x430 <LCDTWI_setCursor>
@@ -1174,8 +1123,6 @@ void printData(void)
      94e:	de bf       	out	0x3e, r29	; 62
      950:	0f be       	out	0x3f, r0	; 63
      952:	cd bf       	out	0x3d, r28	; 61
-	}
-	
      954:	ef 96       	adiw	r28, 0x3f	; 63
      956:	0f b6       	in	r0, 0x3f	; 63
      958:	f8 94       	cli
@@ -1189,23 +1136,14 @@ void printData(void)
      968:	08 95       	ret
 
 0000096a <main>:
-
-void printData(void);
-
-int main(void)
-{
-	TIMER1_begin(1);
      96a:	81 e0       	ldi	r24, 0x01	; 1
      96c:	0e 94 d8 00 	call	0x1b0	; 0x1b0 <TIMER1_begin>
-	TWI_begin(F_TWI_100K);
      970:	88 e4       	ldi	r24, 0x48	; 72
      972:	0e 94 69 00 	call	0xd2	; 0xd2 <TWI_begin>
-	LCDTWI_begin(LCD_Address, 20, 4);
      976:	44 e0       	ldi	r20, 0x04	; 4
      978:	64 e1       	ldi	r22, 0x14	; 20
      97a:	88 e3       	ldi	r24, 0x38	; 56
      97c:	0e 94 be 01 	call	0x37c	; 0x37c <LCDTWI_begin>
-	LCDTWI_printf("LCD 20x4 I2C");
      980:	82 ee       	ldi	r24, 0xE2	; 226
      982:	90 e0       	ldi	r25, 0x00	; 0
      984:	9f 93       	push	r25
@@ -1226,21 +1164,14 @@ int main(void)
      998:	e1 f7       	brne	.-8      	; 0x992 <main+0x28>
      99a:	00 c0       	rjmp	.+0      	; 0x99c <main+0x32>
      99c:	00 00       	nop
-	_delay_ms(1000);
-	LCDTWI_clear();
      99e:	0e 94 ab 01 	call	0x356	; 0x356 <LCDTWI_clear>
      9a2:	0f 90       	pop	r0
      9a4:	0f 90       	pop	r0
-	DS3231_begin();
-	while (1) 
-	{
-		currentTime = millis();
      9a6:	0e 94 f5 00 	call	0x1ea	; 0x1ea <millis>
      9aa:	60 93 06 01 	sts	0x0106, r22	; 0x800106 <currentTime>
      9ae:	70 93 07 01 	sts	0x0107, r23	; 0x800107 <currentTime+0x1>
      9b2:	80 93 08 01 	sts	0x0108, r24	; 0x800108 <currentTime+0x2>
      9b6:	90 93 09 01 	sts	0x0109, r25	; 0x800109 <currentTime+0x3>
-		printData();
      9ba:	0e 94 20 03 	call	0x640	; 0x640 <printData>
      9be:	f3 cf       	rjmp	.-26     	; 0x9a6 <main+0x3c>
 
