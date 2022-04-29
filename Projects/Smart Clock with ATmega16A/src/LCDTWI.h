@@ -6,64 +6,62 @@
 
 // LCD commands
 // ******************************************************************************************************************
-#define CLEAR_DISPLAY   0x01
-#define RETURN_HOME     0x02
-#define ENTRY_MODE_SET  0x04
-#define DISPLAY_CONTROL 0x08
-#define CURSOR_SHIFT    0x10
-#define FUNCTION_SET    0x20
-#define SET_CGRAM_ADDR  0x40
-#define SET_DDRAM_ADDR  0x80
+#define CLEAR_DISPLAY   ((uint8_t)0x01)
+#define RETURN_HOME     ((uint8_t)0x02)
+#define ENTRY_MODE_SET  ((uint8_t)0x04)
+#define DISPLAY_CONTROL ((uint8_t)0x08)
+#define CURSOR_SHIFT    ((uint8_t)0x10)
+#define FUNCTION_SET    ((uint8_t)0x20)
+#define SET_CGRAM_ADDR  ((uint8_t)0x40)
+#define SET_DDRAM_ADDR  ((uint8_t)0x80)
 
 // Flags for LCD entry mode set
 // ******************************************************************************************************************
 
-#define INCREMENT_DDRAM 0x01
-#define DECREMENT_DDRAM 0x00
-#define ENTRY_LEFT      0x02
-#define ENTRY_RIGHT     0x00
+#define INCREMENT_DDRAM ((uint8_t)0x01)
+#define DECREMENT_DDRAM ((uint8_t)0x00)
+#define ENTRY_LEFT      ((uint8_t)0x02)
+#define ENTRY_RIGHT     ((uint8_t)0x00)
 
 // Flags for LCD on/off and cursor control
 // ******************************************************************************************************************
-#define DISPLAY_ON       0x04
-#define DISPLAY_OFF      0x00
-#define CURSOR_ON        0x02
-#define CURSOR_OFF       0x00
-#define CURSOR_BLINK_ON  0x01
-#define CURSOR_BLINK_OFF 0x00
+#define DISPLAY_ON       ((uint8_t)0x04)
+#define DISPLAY_OFF      ((uint8_t)0x00)
+#define CURSOR_ON        ((uint8_t)0x02)
+#define CURSOR_OFF       ((uint8_t)0x00)
+#define CURSOR_BLINK_ON  ((uint8_t)0x01)
+#define CURSOR_BLINK_OFF ((uint8_t)0x00)
 
 // Flags for LCD display and cursor shift
 // ******************************************************************************************************************
-#define SHIFT_DISPLAY 0x08
-#define SHIFT_CURSOR  0x00
-#define SHIFT_LEFT    0x00
-#define SHIFT_RIGHT   0x04
+#define SHIFT_DISPLAY ((uint8_t)0x08)
+#define SHIFT_CURSOR  ((uint8_t)0x00)
+#define SHIFT_LEFT    ((uint8_t)0x00)
+#define SHIFT_RIGHT   ((uint8_t)0x04)
 
 // Flags for LCD function set
 // ******************************************************************************************************************
-#define _8_BIT_MODE 0x10
-#define _4_BIT_MODE 0x00
-#define _2_LINE     0x08
-#define _1_LINE     0x00
-#define _5x11_DOTS  0x04
-#define _5x8_DOTS   0x00
+#define _8_BIT_MODE ((uint8_t)0x10)
+#define _4_BIT_MODE ((uint8_t)0x00)
+#define _2_LINE     ((uint8_t)0x08)
+#define _1_LINE     ((uint8_t)0x00)
+#define _5x11_DOTS  ((uint8_t)0x04)
+#define _5x8_DOTS   ((uint8_t)0x00)
 
 // LCD macros
 // ******************************************************************************************************************
-#define LCD_RS (1 << 0)
-#define LCD_RW (1 << 1)
-#define LCD_EN (1 << 2)
-#define LCD_BKL (1 << 3)
-#define LCD_BSY (1 << 7)
+#define LCD_RS ((uint8_t)(1 << 0))
+#define LCD_RW ((uint8_t)(1 << 1))
+#define LCD_EN ((uint8_t)(1 << 2))
 
 /*********************************************
 LCD struct
 *********************************************/
-static struct LCDTWI
+static struct
 {
 	uint8_t buffer;
 	uint8_t address, cols, rows;
-	uint8_t displayFunction, displayControl, displayMode, backlight;
+	uint8_t displayFunction, displayControl, displayMode;
 }_lcdTWI;
 
 /*********************************************
@@ -72,8 +70,6 @@ Function prototypes
 void LCDTWI_begin      (uint8_t address, uint8_t cols, uint8_t rows);
 void LCDTWI_home       (void);
 void LCDTWI_clear      (void);
-void LCDTWI_backlight  (void);
-void LCDTWI_noBacklight(void);
 void LCDTWI_setCursor  (uint8_t cols, uint8_t rows);
 void LCDTWI_printf     (char* format, ...);
 static void print  (char* s);
@@ -88,7 +84,7 @@ Return:   None
 *********************************************/
 void LCDTWI_begin(uint8_t address, uint8_t cols, uint8_t rows)
 {
-	_lcdTWI.address= address; _lcdTWI.cols = cols - 1; _lcdTWI.rows = rows - 1;
+	_lcdTWI.address = address; _lcdTWI.cols = cols - 1; _lcdTWI.rows = rows - 1;
 	_delay_ms(15);
 	PCF8574_begin(_lcdTWI.address);
 	_delay_ms(4.1); command(0x03); _delay_ms(4.1); command(0x03); _delay_ms(4.1); command(0x03); _delay_ms(4.1); command(0x02);
@@ -98,7 +94,6 @@ void LCDTWI_begin(uint8_t address, uint8_t cols, uint8_t rows)
 	_lcdTWI.displayMode     |= DECREMENT_DDRAM | SHIFT_LEFT;               command(ENTRY_MODE_SET  | _lcdTWI.displayMode);
 	LCDTWI_clear();
 	LCDTWI_home();
-	LCDTWI_backlight();
 }
 
 /*********************************************
@@ -121,38 +116,6 @@ Return:   None
 void LCDTWI_clear(void)
 {
 	command(CLEAR_DISPLAY);
-}
-
-/*********************************************
-Function: backlight()
-Purpose:  Enable the backlight
-Input:    None
-Return:   None
-*********************************************/
-void LCDTWI_backlight(void)
-{
-	if (!_lcdTWI.backlight)                             // Only if backlight is already off
-	{
-		_lcdTWI.backlight |= LCD_BKL;                   // Set backlignt
-		_lcdTWI.buffer |= _lcdTWI.backlight;            // Copy backlight into buffer
-		PCF8574_write(_lcdTWI.address, _lcdTWI.buffer); // Update buffer
-	}
-}
-
-/*********************************************
-Function: noBacklight()
-Purpose:  Disable backlight
-Input:    None
-Return:   None
-*********************************************/
-void LCDTWI_noBacklight(void)
-{
-	if (_lcdTWI.backlight)                              // Only if backlight is already on
-	{
-		_lcdTWI.backlight &= ~LCD_BKL;                  // Clear backlight
-		_lcdTWI.buffer &= ~_lcdTWI.backlight;           // Copy backlight into buffer
-		PCF8574_write(_lcdTWI.address, _lcdTWI.buffer); // Update buffer
-	}
 }
 
 /*********************************************
@@ -207,7 +170,6 @@ static void command(uint8_t command)
 {
 	// Top nibble
 	_lcdTWI.buffer = command & 0xF0;                // Copy data into buffer
-	_lcdTWI.buffer |= _lcdTWI.backlight;            // Check for backlight
 	_lcdTWI.buffer &= ~LCD_RS;                      // Clear RS
 	_lcdTWI.buffer &= ~LCD_RW;                      // Clear RW
 	_lcdTWI.buffer |= LCD_EN;                       // Set EN
@@ -218,7 +180,6 @@ static void command(uint8_t command)
 	_delay_ms(3);
 	// Bottom nibble
 	_lcdTWI.buffer = (command << 4) & 0xF0;         // Copy data into buffer
-	_lcdTWI.buffer |= _lcdTWI.backlight;            // Check for backlight
 	_lcdTWI.buffer &= ~LCD_RS;                      // Clear RS
 	_lcdTWI.buffer &= ~LCD_RW;                      // Clear RW
 	_lcdTWI.buffer |= LCD_EN;                       // Set EN
@@ -239,7 +200,6 @@ static void data(char data)
 {
 	// Top nibble
 	_lcdTWI.buffer = data & 0xF0;                   // Copy data into buffer
-	_lcdTWI.buffer |= _lcdTWI.backlight;            // Check for backlight
 	_lcdTWI.buffer |= LCD_RS;                       // Set RS
 	_lcdTWI.buffer &= ~LCD_RW;                      // Clear RW
 	_lcdTWI.buffer |= LCD_EN;                       // Set EN
@@ -250,7 +210,6 @@ static void data(char data)
 	_delay_ms(3);
 	// Lower nibble
 	_lcdTWI.buffer = (data << 4) & 0xF0;            // Copy data into buffer
-	_lcdTWI.buffer |= _lcdTWI.backlight;            // Check for backlight
 	_lcdTWI.buffer |= LCD_RS;                       // Set RS
 	_lcdTWI.buffer &= ~LCD_RW;                      // Clear RW
 	_lcdTWI.buffer |= LCD_EN;                       // Set EN
