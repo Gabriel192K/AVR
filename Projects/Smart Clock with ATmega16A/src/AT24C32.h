@@ -8,9 +8,9 @@
 /*********************************************
 Function prototypes
 *********************************************/
-void AT24C32_begin(void);
-void AT24C32_write(uint8_t address, uint8_t data);
-void AT24C32_read(uint8_t address, uint8_t* data);
+void    AT24C32_begin(void);
+uint8_t AT24C32_write(uint8_t address, uint8_t data);
+uint8_t AT24C32_read (uint8_t address);
 
 /*********************************************
 Function: begin()
@@ -26,32 +26,37 @@ void AT24C32_begin(void)
 Function: write()
 Purpose:  Write byte of data to a specific address
 Input:    Address and data
-Return:   None
+Return:   1 if successfull and 0 if not successfull (already same value in that register)
 *********************************************/
-void AT24C32_write(uint8_t address, uint8_t data)
+uint8_t AT24C32_write(uint8_t address, uint8_t data)
 {
-    TWI_beginTransmission(AT24C32_ADDRESS);
-    TWI_write(address >> 8);
-    TWI_write(address);
-    TWI_write(data);
-    TWI_endTransmission();
-    _delay_ms(5);
+	uint8_t readValue = AT24C32_read(address);
+	if (data != readValue)
+	{
+		TWI_beginTransmission(AT24C32_ADDRESS);
+		TWI_write(address >> 8);
+		TWI_write(address);
+		TWI_write(data);
+		TWI_endTransmission();
+		_delay_ms(5);
+		return 1;
+	}
+	return 0;
 }
 
 /*********************************************
 Function: read()
 Purpose:  Read byte of data from a specific address
-Input:    Address and pointer to data
-Return:   None
+Input:    Address where reading is requested
+Return:   Data
 *********************************************/
-void AT24C32_read(uint8_t address, uint8_t* data)
+uint8_t AT24C32_read(uint8_t address)
 {
-    TWI_beginTransmission(AT24C32_ADDRESS);
-    TWI_write(address >> 8);
-    TWI_write(address);
-    TWI_requestFrom(AT24C32_ADDRESS);
-    *data = TWI_read(TWI_NACK);
-    TWI_endTransmission();
+	TWI_beginTransmission(AT24C32_ADDRESS);
+	TWI_write(address >> 8);
+	TWI_write(address);
+	TWI_requestFrom(AT24C32_ADDRESS);
+	return (TWI_read(TWI_NACK));
 }
 
 #endif

@@ -67,9 +67,10 @@ void printData(void)
 		(rtc.year < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d", rtc.year);
 		LCDTWI_setCursor(0, 2); LCDTWI_printf("DoW: ");
 		const char daysOfWeek[7][9] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-		LCDTWI_printf("%s", daysOfWeek[rtc.dayOfWeek]);
-		AT24C32_read(0x00, &rd);
-		LCDTWI_setCursor(15, 0); LCDTWI_printf("0x%X", rd);
+		LCDTWI_printf("%s", daysOfWeek[rtc.dayOfWeek - 1]);
+		uint8_t ok = AT24C32_write(0x00, 0x9);
+		rd = AT24C32_read(0x00);
+		LCDTWI_setCursor(15, 0); LCDTWI_printf("0x%X %d", rd, ok);
 	}
 	
 }
