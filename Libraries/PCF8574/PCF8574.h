@@ -14,20 +14,49 @@
 |   111  |   0x27  |   0x3F   |
 */
 
-void PCF8574_begin  (uint8_t address);
-void PCF8574_write  (uint8_t address, uint8_t data);
+/*********************************************
+Function prototypes
+*********************************************/
+void PCF8574_begin(uint8_t address);
+void PCF8574_write(uint8_t address, uint8_t data);
+uint8_t PCF8574_read (uint8_t address);
 
+/*********************************************
+Function: begin()
+Purpose:  Initialize PCF8574 with all pins at 0 volts
+Input:    Address of PCF8574
+Return:   None
+*********************************************/
 void PCF8574_begin(uint8_t address)
 {
 	TWI_beginTransmission(address);
-	TWI_writeData(0x00);
+	TWI_write(0x00);
 	TWI_endTransmission();
 }
 
+/*********************************************
+Function: write()
+Purpose:  Write data to PCF8574
+Input:    Address of PCF8574 and desired data
+Return:   None
+*********************************************/
 void PCF8574_write(uint8_t address, uint8_t data)
 {
 	TWI_beginTransmission(address);
-	TWI_writeData(data);
+	TWI_write(data);
 	TWI_endTransmission();
+}
+
+/*********************************************
+Function: read()
+Purpose:  Read data from PCF8574
+Input:    Address of PCF8574
+Return:   Data from PCF8574
+*********************************************/
+uint8_t PCF8574_read(uint8_t address)
+{
+	TWI_beginTransmission(address);
+	TWI_requestFrom(address, 1);
+	return TWI_read();
 }
 #endif

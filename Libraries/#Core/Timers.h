@@ -83,9 +83,9 @@ ISR (TIMER1_COMPA_vect)
 void TIMER1_begin(uint8_t milliseconds)
 {
 	// Clear Timer on Compare && Prescaler F_CPU / 1024
-	TCCR1B |= (1 << WGM12) | (1 << CS12) | (1 << CS10);
+	TCCR1B |= (1 << WGM12) | (1 << CS10);
 	// Set the value of overflowing
-	OCR1A = (milliseconds / 1000.) / (1. / (F_CPU / 1024.));
+	OCR1A = (milliseconds / 1000.) / (1. / F_CPU);
 	//OCR1A = (F_CPU / 1000) / 1024;
 	// Enable the compare match interrupt
 	TIMSK |= (1 << OCIE1A);
