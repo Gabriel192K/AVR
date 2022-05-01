@@ -20,8 +20,10 @@ TWCR BITMASK
 *********************************************************************************************************************/
 
 #if defined(__AVR_ATmega16__) || defined(__AVR_ATmega16A__)
-	#define TWI_SCL PORTC0
-	#define TWI_SDA PORTC1
+	#define TWI_DDR  DDRC
+	#define TWI_PORT PORTC
+	#define TWI_SCL  PORTC0
+	#define TWI_SDA  PORTC1
 #endif
 
 #define TWI_START()     (TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTA))
