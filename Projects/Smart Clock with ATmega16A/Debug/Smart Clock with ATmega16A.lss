@@ -1335,10 +1335,10 @@ void printData(void)
      9c2:	90 91 55 01 	lds	r25, 0x0155	; 0x800155 <currentTime+0x1>
      9c6:	a0 91 56 01 	lds	r26, 0x0156	; 0x800156 <currentTime+0x2>
      9ca:	b0 91 57 01 	lds	r27, 0x0157	; 0x800157 <currentTime+0x3>
-     9ce:	40 91 60 00 	lds	r20, 0x0060	; 0x800060 <__data_start>
-     9d2:	50 91 61 00 	lds	r21, 0x0061	; 0x800061 <__data_start+0x1>
-     9d6:	60 91 62 00 	lds	r22, 0x0062	; 0x800062 <__data_start+0x2>
-     9da:	70 91 63 00 	lds	r23, 0x0063	; 0x800063 <__data_start+0x3>
+     9ce:	40 91 60 00 	lds	r20, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+     9d2:	50 91 61 00 	lds	r21, 0x0061	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+     9d6:	60 91 62 00 	lds	r22, 0x0062	; 0x800062 <__DATA_REGION_ORIGIN__+0x2>
+     9da:	70 91 63 00 	lds	r23, 0x0063	; 0x800063 <__DATA_REGION_ORIGIN__+0x3>
      9de:	8c 01       	movw	r16, r24
      9e0:	9d 01       	movw	r18, r26
      9e2:	04 1b       	sub	r16, r20
@@ -1355,10 +1355,10 @@ void printData(void)
      9f8:	b1 c0       	rjmp	.+354    	; 0xb5c <printData+0x324>
 	{
 		lastTenSeconds = currentTime;
-     9fa:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__data_start>
-     9fe:	90 93 61 00 	sts	0x0061, r25	; 0x800061 <__data_start+0x1>
-     a02:	a0 93 62 00 	sts	0x0062, r26	; 0x800062 <__data_start+0x2>
-     a06:	b0 93 63 00 	sts	0x0063, r27	; 0x800063 <__data_start+0x3>
+     9fa:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+     9fe:	90 93 61 00 	sts	0x0061, r25	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+     a02:	a0 93 62 00 	sts	0x0062, r26	; 0x800062 <__DATA_REGION_ORIGIN__+0x2>
+     a06:	b0 93 63 00 	sts	0x0063, r27	; 0x800063 <__DATA_REGION_ORIGIN__+0x3>
 		LCDTWI_setCursor(0, 1); LCDTWI_printf("Date: ");
      a0a:	61 e0       	ldi	r22, 0x01	; 1
      a0c:	80 e0       	ldi	r24, 0x00	; 0
@@ -1659,10 +1659,10 @@ uint8_t handlePassword(void)
      c5a:	97 e2       	ldi	r25, 0x27	; 39
      c5c:	a0 e0       	ldi	r26, 0x00	; 0
      c5e:	b0 e0       	ldi	r27, 0x00	; 0
-     c60:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__data_start>
-     c64:	90 93 61 00 	sts	0x0061, r25	; 0x800061 <__data_start+0x1>
-     c68:	a0 93 62 00 	sts	0x0062, r26	; 0x800062 <__data_start+0x2>
-     c6c:	b0 93 63 00 	sts	0x0063, r27	; 0x800063 <__data_start+0x3>
+     c60:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+     c64:	90 93 61 00 	sts	0x0061, r25	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+     c68:	a0 93 62 00 	sts	0x0062, r26	; 0x800062 <__DATA_REGION_ORIGIN__+0x2>
+     c6c:	b0 93 63 00 	sts	0x0063, r27	; 0x800063 <__DATA_REGION_ORIGIN__+0x3>
 		currentTime = millis();
      c70:	0e 94 06 01 	call	0x20c	; 0x20c <millis>
      c74:	60 93 54 01 	sts	0x0154, r22	; 0x800154 <currentTime>

@@ -56,8 +56,8 @@ Return:   1 if successful or loop endlessly if unsuccesful
 *********************************************/
 uint8_t TWI_begin(uint8_t speed)
 {
-	DDRC  &= ~(1 << TWI_SDA) | (1 << TWI_SCL);
-	PORTC &= ~(1 << TWI_SDA) | (1 << TWI_SCL);
+	TWI_DDR  &= ~(1 << TWI_SDA) | (1 << TWI_SCL);
+	TWI_PORT &= ~(1 << TWI_SDA) | (1 << TWI_SCL);
 	while (!handleSpeed(speed));
 	return 1;
 }
