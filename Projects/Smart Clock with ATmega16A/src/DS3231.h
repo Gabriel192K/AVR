@@ -79,10 +79,10 @@ void DS3231_getTime(uint8_t* hour, uint8_t* minute, uint8_t* second)
 {
 	TWI_beginTransmission(DS3231_ADDRESS);                          // Begin transmission to DS3231
 	TWI_write(DS3231_SECOND_REGISTER);                              // Start with second register
-	TWI_requestFrom(DS3231_ADDRESS);                                // Request data from DS3231
-	*second = bcdToDec(TWI_read(TWI_ACK) & ~DS3231_STOP_CLOCK_BIT); // Read second
-	*minute = bcdToDec(TWI_read(TWI_ACK));                          // Read minute
-	*hour   = bcdToDec(TWI_read(TWI_NACK));                         // Read hour
+	TWI_requestFrom(DS3231_ADDRESS, 3);                             // Request data from DS3231
+	*second = bcdToDec(TWI_read() & ~DS3231_STOP_CLOCK_BIT); // Read second
+	*minute = bcdToDec(TWI_read());                          // Read minute
+	*hour   = bcdToDec(TWI_read());                         // Read hour
 	TWI_endTransmission();                                          // End transmission to DS3231
 }
 
@@ -112,10 +112,10 @@ void DS3231_getDate(uint8_t* date, uint8_t* month, uint8_t* year)
 {
 	TWI_beginTransmission(DS3231_ADDRESS); // Begin transmission to DS3231
 	TWI_write(DS3231_DATE_REGISTER);       // Start from date register
-	TWI_requestFrom(DS3231_ADDRESS);       // Request data from DS3231
-	*date = bcdToDec(TWI_read(TWI_ACK));   // Read date
-	*month = bcdToDec(TWI_read(TWI_ACK));  // Read month
-	*year = bcdToDec(TWI_read(TWI_NACK));  // Read year
+	TWI_requestFrom(DS3231_ADDRESS, 3);    // Request data from DS3231
+	*date = bcdToDec(TWI_read());   // Read date
+	*month = bcdToDec(TWI_read());  // Read month
+	*year = bcdToDec(TWI_read());  // Read year
 	TWI_endTransmission();                 // End transmission to DS3231
 }
 
@@ -143,8 +143,8 @@ void DS3231_getDayOfWeek(uint8_t* dayOfWeek)
 {
 	TWI_beginTransmission(DS3231_ADDRESS);     // Begin transmission to DS3231
 	TWI_write(DS3231_DAY_REGISTER);            // Start with day register
-	TWI_requestFrom(DS3231_ADDRESS);           // Request data from DS3231
-	*dayOfWeek = bcdToDec(TWI_read(TWI_NACK)); // Read day of week
+	TWI_requestFrom(DS3231_ADDRESS, 1);        // Request data from DS3231
+	*dayOfWeek = bcdToDec(TWI_read()); // Read day of week
 	TWI_endTransmission();                     // End transmission to DS3231
 }
 
@@ -158,8 +158,8 @@ void DS3231_getTemperature(int8_t* temperature)
 {
 	TWI_beginTransmission(DS3231_ADDRESS); // Begin transmission to DS3231
 	TWI_write(DS3231_TEMP_HIGH_REGISTER);  // Start with temperature MSB register
-	TWI_requestFrom(DS3231_ADDRESS);       // Request data from DS3231
-	*temperature = TWI_read(TWI_NACK);     // Read temperature
+	TWI_requestFrom(DS3231_ADDRESS, 1);    // Request data from DS3231
+	*temperature = TWI_read();             // Read temperature
 	if (*temperature & DS3231_TEMPERATURE_SIGN_BIT) *temperature *= (int8_t)-1;
 	TWI_endTransmission();
 }
@@ -168,8 +168,8 @@ uint8_t DS3231_powerDown(void)
 {
 	TWI_beginTransmission(DS3231_ADDRESS);                    // Begin transmission to DS3231
 	TWI_write(DS3231_STATUS_REGISTER);                        // Start with status register
-	TWI_requestFrom(DS3231_ADDRESS);                          // Request data from DS3231
-	return (TWI_read(TWI_NACK) & DS3231_OSCILLATOR_STOP_BIT); // Return 1 if power was down
+	TWI_requestFrom(DS3231_ADDRESS, 1);                       // Request data from DS3231
+	return (TWI_read() & DS3231_OSCILLATOR_STOP_BIT); // Return 1 if power was down
 }
 
 /*********************************************

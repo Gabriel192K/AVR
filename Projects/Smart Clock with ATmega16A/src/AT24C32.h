@@ -11,6 +11,7 @@ Function prototypes
 void    AT24C32_begin(void);
 uint8_t AT24C32_write(uint8_t address, uint8_t data);
 uint8_t AT24C32_read (uint8_t address);
+void    AT24C32_readArray(uint8_t address, uint8_t* data , size_t size);
 
 /*********************************************
 Function: begin()
@@ -55,8 +56,16 @@ uint8_t AT24C32_read(uint8_t address)
 	TWI_beginTransmission(AT24C32_ADDRESS);
 	TWI_write(address >> 8);
 	TWI_write(address);
-	TWI_requestFrom(AT24C32_ADDRESS);
-	return (TWI_read(TWI_NACK));
+	TWI_requestFrom(AT24C32_ADDRESS, 1);
+	return (TWI_read());
+}
+
+void AT24C32_readArray(uint8_t address, uint8_t* data, size_t size)
+{
+	while (size--)
+	{
+		*data++ = AT24C32_read(address++);
+	}
 }
 
 #endif

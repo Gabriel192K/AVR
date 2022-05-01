@@ -3,15 +3,18 @@
  *
  * Created: 4/11/2022 3:33:14 PM
  * Author : Rotes Gabriel
- */ 
+ */
 #define F_CPU 16000000UL
 #define LCD_Address 0x38
+#define KEYPAD_Address 0x39
 #include <stdio.h>
+#include <string.h>
 #include "src/TWI.h"
 #include "src/Timers.h"
 #include "src/LCDTWI.h"
 #include "src/DS3231.h"
 #include "src/AT24C32.h"
+#include "src/KeypadTWI.h"
 
 struct
 {
@@ -21,10 +24,15 @@ struct
 
 uint8_t rd, wr;
 
+char key;
+char buffer[10];
+uint8_t bufferLength;
+
 unsigned long currentTime;
 unsigned long lastSecond = 1000UL , lastTenSeconds = 10000UL;
 
 void printData(void);
+uint8_t handlePassword(void);
 
 int main(void)
 {
@@ -35,10 +43,12 @@ int main(void)
 	_delay_ms(1000);
 	LCDTWI_clear();
 	DS3231_begin();
+	KEYPADTWI_begin(KEYPAD_Address, 4, 4);
 	while (1) 
 	{
 		currentTime = millis();
 		printData();
+		while(handlePassword());
 	}
 }
 
@@ -73,4 +83,35 @@ void printData(void)
 		LCDTWI_setCursor(15, 0); LCDTWI_printf("0x%X %d", rd, ok);
 	}
 	
+}
+
+
+
+uint8_t handlePassword(void)
+{
+	const char password[] = "130802";
+	key = KEYPADTWI_getKey();
+	
+	if (key)
+	{
+		if (bufferLength == 0) LCDTWI_clear();
+		mystrcat(buffer, &key, 1);
+		LCDTWI_setCursor(bufferLength, 0); LCDTWI_printf("*");
+		bufferLength++;
+	}
+	if (bufferLength == 6)
+	{
+		LCDTWI_setCursor(0, 0);
+		if (mystrcmp(buffer, password, sizeof password) == 0)
+			 LCDTWI_printf("Access Granted!");
+		else
+			LCDTWI_printf("Access Denied!");
+		mymemset(buffer, 0);
+		bufferLength = 0;
+		lastSecond = 1000UL , lastTenSeconds = 10000UL;
+		currentTime = millis();
+		while (millis() - currentTime <= 2000UL);
+		LCDTWI_clear();
+	}
+	return bufferLength;
 }

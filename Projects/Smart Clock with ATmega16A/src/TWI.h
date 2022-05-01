@@ -18,36 +18,46 @@ TWCR BITMASK
 | BIT 7 | BIT 6 | BIT 5 | BIT 4 | BIT 3 | BIT 2 | BIT 1 | BIT 0 |
 | TWINT | TWEA  | TWSTA | TWSTO | TWWC  | TWEN  |   -   | TWIE  |
 *********************************************************************************************************************/
-#define TWI_WRITE 0
-#define TWI_READ  1
+
+#if defined(__AVR_ATmega16__) || defined(__AVR_ATmega16A__)
+	#define TWI_SCL PORTC0
+	#define TWI_SDA PORTC1
+#endif
+
+#define TWI_START()     (TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTA))
+#define TWI_STOP()      (TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO))
+#define TWI_WRITE()     (TWCR = (1<<TWINT)|(1<<TWEN))
+#define TWI_READ(ACK)   (TWCR = (1<<TWINT)|(1<<TWEN)|(ACK<<TWEA))
+
 #define F_TWI_100K 72
 #define F_TWI_250K 24
 #define F_TWI_400K 12
-#define TWI_NACK 0
-#define TWI_ACK  1
+
+static int8_t _bytes;
 
 /*********************************************
 Function prototypes
 *********************************************/
-void TWI_begin(uint8_t speed);
-void TWI_beginTransmission(uint8_t _address);
-void TWI_write(uint8_t _data);
-void TWI_requestFrom(uint8_t _address);
-uint8_t TWI_read(uint8_t readACK);
-void TWI_endTransmission();
-static uint8_t handleSpeed(uint8_t s);
+uint8_t TWI_begin(uint8_t speed);
+void    TWI_beginTransmission(uint8_t address);
+void    TWI_write(uint8_t data);
+void    TWI_requestFrom(uint8_t address, uint8_t bytes);
+uint8_t TWI_read();
+void    TWI_endTransmission();
+static uint8_t handleSpeed(uint8_t speed);
 
 /*********************************************
 Function: begin()
 Purpose:  Initialize TWI
 Input:    None
-Return:   None
+Return:   1 if successful or loop endlessly if unsuccesful
 *********************************************/
-void TWI_begin(uint8_t speed)
+uint8_t TWI_begin(uint8_t speed)
 {
-	DDRC  &= ~(1 << PORTC1) | (1 << PORTC0);
-	PORTC &= ~(1 << PORTC1) | (1 << PORTC0);
+	DDRC  &= ~(1 << TWI_SDA) | (1 << TWI_SCL);
+	PORTC &= ~(1 << TWI_SDA) | (1 << TWI_SCL);
 	while (!handleSpeed(speed));
+	return 1;
 }
 
 /*********************************************
@@ -56,13 +66,13 @@ Purpose:  Begin transmission of data
 Input:    Address where data is transmitted
 Return:   None
 *********************************************/
-void TWI_beginTransmission(uint8_t _address)
+void TWI_beginTransmission(uint8_t address)
 {
-	TWCR = (1 << TWSTA) | (1 << TWEN) | (1 << TWINT);
+	TWI_START();
 	while (!(TWCR & (1 << TWINT)));
-	_address = ((_address << 1) | TWI_WRITE);
-	TWDR = _address;
-	TWCR = (1 << TWINT) | (1 << TWEN);
+	address = (address << 1);
+	TWDR = address;
+	TWI_WRITE();
 	while (!(TWCR & (1 << TWINT)));
 }
 
@@ -72,49 +82,41 @@ Purpose:  Write data on the TWI bus
 Input:    Byte of data to be sent
 Return:   None
 *********************************************/
-void TWI_write(uint8_t _data)
+void TWI_write(uint8_t data)
 {
-	TWDR = _data;
-	TWCR = (1 << TWINT) | (1 << TWEN);
+	TWDR = data;
+	TWI_WRITE();
 	while (!(TWCR & (1 << TWINT)));
 }
 
 /*********************************************
 Function: requesrFrom()
 Purpose:  Request data from slave
-Input:    Address of the slave
+Input:    Address of the slave and amount of bytes supposed to get
 Return:   None
 *********************************************/
-void TWI_requestFrom(uint8_t _address)
+void TWI_requestFrom(uint8_t address, uint8_t bytes)
 {
-	TWCR = (1 << TWSTA) | (1 << TWEN) | (1 << TWINT);
+	_bytes = bytes;
+	TWI_START();
 	while (!(TWCR & (1 << TWINT)));
-	_address = ((_address << 1) | TWI_READ);
-	TWDR = _address;
-	TWCR = (1 << TWINT) | (1 << TWEN);
+	address = ((address << 1) | 1);
+	TWDR = address;
+	TWI_WRITE();
 	while (!(TWCR & (1 << TWINT)));
 }
 
 /*********************************************
 Function: read()
 Purpose:  Read data from slave
-Input:    TWI_ACK state
+Input:    None
 Return:   Data from slave
 *********************************************/
-uint8_t TWI_read(uint8_t readACK)
+uint8_t TWI_read()
 {
-	if (readACK == TWI_ACK)
-	{
-		TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA);
-		while (!(TWCR & (1 << TWINT)));
-	}
-	else if (readACK == TWI_NACK)
-	{
-		TWCR = (1 << TWINT) | (1 << TWEN);
-		while (!(TWCR & (1 << TWINT)));
-	}
-	uint8_t _data = TWDR;
-	return _data;
+	(--_bytes > 0) ? TWI_READ(1) : ((_bytes == 0) ? TWI_READ(0) : 0);
+	while (!(TWCR & (1 << TWINT)));
+	return TWDR;
 }
 
 /*********************************************
@@ -125,7 +127,7 @@ Return:   None
 *********************************************/
 void TWI_endTransmission()
 {
-	TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);
+	TWI_STOP();
 	while(TWCR & (1<<TWSTO));
 }
 
@@ -135,14 +137,15 @@ Purpose:  Handle TWI speed selection
 Input:    Speed of TWI
 Return:   Return 1 if successful and 0 if not
 *********************************************/
-static uint8_t handleSpeed(uint8_t s)
+static uint8_t handleSpeed(uint8_t speed)
 {
-	switch (s)
+	switch (speed)
 	{
-		case F_TWI_100K: TWBR = F_TWI_100K; return 1; break;
-		case F_TWI_250K: TWBR = F_TWI_250K; return 1; break;
-		case F_TWI_400K: TWBR = F_TWI_400K; return 1; break;
-		default: return 0; break;
+		case F_TWI_100K: TWBR = F_TWI_100K; return 1;
+		case F_TWI_250K: TWBR = F_TWI_250K; return 1;
+		case F_TWI_400K: TWBR = F_TWI_400K; return 1;
+		default: return 0;
 	}
 }
+
 #endif

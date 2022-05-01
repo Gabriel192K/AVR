@@ -19,7 +19,7 @@ Function prototypes
 *********************************************/
 void PCF8574_begin(uint8_t address);
 void PCF8574_write(uint8_t address, uint8_t data);
-void PCF8574_read (uint8_t address, uint8_t* data);
+uint8_t PCF8574_read (uint8_t address);
 
 /*********************************************
 Function: begin()
@@ -47,10 +47,16 @@ void PCF8574_write(uint8_t address, uint8_t data)
 	TWI_endTransmission();
 }
 
-void PCF8574_read(uint8_t address, uint8_t* data)
+/*********************************************
+Function: read()
+Purpose:  Read data from PCF8574
+Input:    Address of PCF8574
+Return:   Data from PCF8574
+*********************************************/
+uint8_t PCF8574_read(uint8_t address)
 {
 	TWI_beginTransmission(address);
-	*data =  TWI_read(TWI_NACK);
-	TWI_endTransmission();
+	TWI_requestFrom(address, 1);
+	return TWI_read();
 }
 #endif
