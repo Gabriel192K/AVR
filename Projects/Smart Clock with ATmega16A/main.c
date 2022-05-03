@@ -96,7 +96,7 @@ uint8_t handlePassword(void)
 	{
 		if (bufferLength == 0) LCDTWI_clear();
 		mystrcat(buffer, &key, 1);
-		LCDTWI_setCursor(bufferLength, 0); LCDTWI_printf("*");
+		LCDTWI_setCursor(bufferLength, 0); LCDTWI_printf("%c", key);
 		bufferLength++;
 	}
 	if (bufferLength == 6)
@@ -108,9 +108,9 @@ uint8_t handlePassword(void)
 			LCDTWI_printf("Access Denied!");
 		mymemset(buffer, 0);
 		bufferLength = 0;
-		lastSecond = 1000UL , lastTenSeconds = 10000UL;
 		currentTime = millis();
 		while (millis() - currentTime <= 2000UL);
+		lastSecond = 1000UL; lastTenSeconds = 10000UL;
 		LCDTWI_clear();
 	}
 	return bufferLength;
