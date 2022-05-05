@@ -23,11 +23,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   9 .debug_frame  00000504  00000000  00000000  00005380  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    000007be  00000000  00000000  00005884  2**0
+ 10 .debug_str    000007b6  00000000  00000000  00005884  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00001714  00000000  00000000  00006042  2**0
+ 11 .debug_loc    00001714  00000000  00000000  0000603a  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000190  00000000  00000000  00007756  2**0
+ 12 .debug_ranges 00000190  00000000  00000000  0000774e  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -1674,17 +1674,17 @@ uint8_t handlePassword(void)
      c84:	a1 05       	cpc	r26, r1
      c86:	b1 05       	cpc	r27, r1
      c88:	58 f3       	brcs	.-42     	; 0xc60 <handlePassword+0xee>
-		lastSecond = 1000UL; lastTenSeconds = 10000UL;
-     c8a:	88 ee       	ldi	r24, 0xE8	; 232
-     c8c:	93 e0       	ldi	r25, 0x03	; 3
+		lastSecond = 2000UL; lastTenSeconds = 11000UL;
+     c8a:	80 ed       	ldi	r24, 0xD0	; 208
+     c8c:	97 e0       	ldi	r25, 0x07	; 7
      c8e:	a0 e0       	ldi	r26, 0x00	; 0
      c90:	b0 e0       	ldi	r27, 0x00	; 0
      c92:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <lastSecond>
      c96:	90 93 65 00 	sts	0x0065, r25	; 0x800065 <lastSecond+0x1>
      c9a:	a0 93 66 00 	sts	0x0066, r26	; 0x800066 <lastSecond+0x2>
      c9e:	b0 93 67 00 	sts	0x0067, r27	; 0x800067 <lastSecond+0x3>
-     ca2:	80 e1       	ldi	r24, 0x10	; 16
-     ca4:	97 e2       	ldi	r25, 0x27	; 39
+     ca2:	88 ef       	ldi	r24, 0xF8	; 248
+     ca4:	9a e2       	ldi	r25, 0x2A	; 42
      ca6:	a0 e0       	ldi	r26, 0x00	; 0
      ca8:	b0 e0       	ldi	r27, 0x00	; 0
      caa:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>

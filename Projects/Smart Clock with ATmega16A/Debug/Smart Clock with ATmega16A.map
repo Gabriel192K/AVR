@@ -758,11 +758,11 @@ END GROUP
  *(.debug_frame)
  .debug_frame   0x00000000      0x504 main.o
 
-.debug_str      0x00000000      0x7be
+.debug_str      0x00000000      0x7b6
  *(.debug_str)
  .debug_str     0x00000000      0x1af C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega16a/avr5/crtatmega16a.o
- .debug_str     0x000001af      0x60f main.o
-                                0x66c (size before relaxing)
+ .debug_str     0x000001af      0x607 main.o
+                                0x664 (size before relaxing)
 
 .debug_loc      0x00000000     0x1714
  *(.debug_loc)

@@ -110,7 +110,7 @@ uint8_t handlePassword(void)
 		bufferLength = 0;
 		currentTime = millis();
 		while (millis() - currentTime <= 2000UL);
-		lastSecond = 1000UL; lastTenSeconds = 10000UL;
+		lastSecond = 2000UL; lastTenSeconds = 11000UL;
 		LCDTWI_clear();
 	}
 	return bufferLength;
