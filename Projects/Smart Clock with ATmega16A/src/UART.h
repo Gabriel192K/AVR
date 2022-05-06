@@ -129,9 +129,9 @@ UBRRL/UBRRH - USART Baud Rate Registers
 	#define ATMEGA_USART
 	#define UART0_RX_INTERRUPT USART_RXC_vect
 	#define UART0_TX_INTERRUPT USART_UDRE_vect
-	#define UART0_DATA		   UDR
-	#define UART0_STATUS	   UCSRA
-	#define UART0_CONTROL	   UCSRB
+	#define UART0_DATA         UDR
+	#define UART0_STATUS       UCSRA
+	#define UART0_CONTROL      UCSRB
 	#define UART0_UDRIE		   UDRIE
 #elif defined(__AVR_ATmega48__) || defined(__AVR_ATmega48P__) \
    || defined(__AVR_ATmega88__) || defined(__AVR_ATmega88P__) \
@@ -140,10 +140,10 @@ UBRRL/UBRRH - USART Baud Rate Registers
 	#define ATMEGA_USART0
 	#define UART0_RX_INTERRUPT  USART_RX_vect
 	#define UART0_TX_INTERRUPT  USART_UDRE_vect
-	#define UART0_DATA			UDR0
-	#define UART0_STATUS		UCSR0A
-	#define UART0_CONTROL   	UCSR0B
-	#define UART0_UDRIE			UDRIE0
+	#define UART0_DATA          UDR0
+	#define UART0_STATUS        UCSR0A
+	#define UART0_CONTROL       UCSR0B
+	#define UART0_UDRIE         UDRIE0
 #else
 	#error "no UART definition for MCU available"
 #endif
@@ -167,8 +167,8 @@ void     UART_printf   (char* format, ...);
 static void print(const char* s);
 static void send (const char c);
 
-//uint8_t		   UART_Read_Char  (void);
-//uint8_t		   UART_Read_String(char* _string);
+//uint8_t UART_Read_Char  (void);
+//uint8_t UART_Read_String(char* _string);
 
 /************************
 Function: Interrupt Service Routines
