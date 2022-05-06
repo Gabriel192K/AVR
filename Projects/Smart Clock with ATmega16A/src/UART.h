@@ -132,7 +132,7 @@ UBRRL/UBRRH - USART Baud Rate Registers
 	#define UART0_DATA         UDR
 	#define UART0_STATUS       UCSRA
 	#define UART0_CONTROL      UCSRB
-	#define UART0_UDRIE		   UDRIE
+	#define UART0_UDRIE        UDRIE
 #elif defined(__AVR_ATmega48__) || defined(__AVR_ATmega48P__) \
    || defined(__AVR_ATmega88__) || defined(__AVR_ATmega88P__) \
    || defined(__AVR_ATmega168__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega168PA__)\
