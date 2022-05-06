@@ -11,11 +11,13 @@
 
 int main(void)
 {
-	UART0_Begin(19200);
-    UART0_Send_Char('C');
-    while (1) 
+	UART_begin(9600);
+    UART_printf("Hello, World!\n");
+	DDRD |= (1 << DDRD4);
+    while (1)
     {
-		 UART0_Send_Char('C');
+		 UART_printf("Hello, World!\n");
+		 PORTD ^= (1 << PORTD4);
 		_delay_ms(1000);
     }
 }

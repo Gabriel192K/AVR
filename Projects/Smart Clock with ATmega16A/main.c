@@ -15,6 +15,7 @@
 #include "src/DS3231.h"
 #include "src/AT24C32.h"
 #include "src/KeypadTWI.h"
+#include "src/UART.h"
 
 struct
 {
@@ -36,6 +37,7 @@ uint8_t handlePassword(void);
 
 int main(void)
 {
+	UART0_Begin(9600);
 	TIMER1_begin(1);
 	TWI_begin(F_TWI_100K);
 	LCDTWI_begin(LCD_Address, 20, 4);
@@ -44,6 +46,7 @@ int main(void)
 	LCDTWI_clear();
 	DS3231_begin();
 	KEYPADTWI_begin(KEYPAD_Address, 4, 4);
+	UART0_Send_String("Hello MF!");
 	while (1) 
 	{
 		currentTime = millis();
@@ -67,6 +70,7 @@ void printData(void)
 		(rtc.second < 10) ? LCDTWI_printf("0") : 0; LCDTWI_printf("%d", rtc.second);
 		LCDTWI_setCursor(0, 3); LCDTWI_printf("Temperature: ");
 		LCDTWI_printf("%dC", rtc.temperature);
+		UART0_Send_String("Hello MF!");
 	}
 	if (currentTime - lastTenSeconds > 10000UL)
 	{
