@@ -111,7 +111,7 @@ UBRRL/UBRRH - USART Baud Rate Registers
 ********************************************************************************************************************/
 
 #define UART_RX_BUFFER_SIZE 128 // 128 bytes size
-#define UART_TX_BUFFER_SIZE	128	// 128 bytes size
+#define UART_TX_BUFFER_SIZE 128 // 128 bytes size
 
 #define UART_RX_BUFFER_MASK (UART_RX_BUFFER_SIZE - 1) // Used to mask received data within 0 and (buffer size - 1)
 #define UART_TX_BUFFER_MASK (UART_TX_BUFFER_SIZE - 1) // Used to mask transmitted data within 0 and (buffer size - 1)
@@ -138,12 +138,12 @@ UBRRL/UBRRH - USART Baud Rate Registers
    || defined(__AVR_ATmega168__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega168PA__)\
    || defined(__AVR_ATmega328P__) 
 	#define ATMEGA_USART0
-	#define UART0_RX_INTERRUPT  USART_RX_vect
-	#define UART0_TX_INTERRUPT  USART_UDRE_vect
-	#define UART0_DATA          UDR0
-	#define UART0_STATUS        UCSR0A
-	#define UART0_CONTROL       UCSR0B
-	#define UART0_UDRIE         UDRIE0
+	#define UART0_RX_INTERRUPT USART_RX_vect
+	#define UART0_TX_INTERRUPT USART_UDRE_vect
+	#define UART0_DATA         UDR0
+	#define UART0_STATUS       UCSR0A
+	#define UART0_CONTROL      UCSR0B
+	#define UART0_UDRIE        UDRIE0
 #else
 	#error "no UART definition for MCU available"
 #endif
@@ -160,9 +160,9 @@ UBRRL/UBRRH - USART Baud Rate Registers
 /*********************
 Glossary of functions
 *********************/
-void     UART_begin	   (uint32_t _baudrate);
+void     UART_begin    (uint32_t _baudrate);
 uint16_t UART_available(void);
-void     UART_flush	   (void);
+void     UART_flush    (void);
 void     UART_printf   (char* format, ...);
 static void print(const char* s);
 static void send (const char c);
