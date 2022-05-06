@@ -1,6 +1,7 @@
 #ifndef UART_H
 #define UART_H
 
+#include <stdio.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
@@ -109,12 +110,8 @@ UBRRL/UBRRH - USART Baud Rate Registers
 |                              UBRRL[7:0]                               |
 ********************************************************************************************************************/
 
-#define UART_RX_BUFFER_SIZE   128	 // 128 bytes size
-#define UART_TX_BUFFER_SIZE	  128	 // 128 bytes size
-#define UART_FRAME_ERROR      0x0800 // Framing Error by UART
-#define UART_OVERRUN_ERROR    0x0400 // Overrun condition by UART
-#define UART_BUFFER_OVERFLOW  0x0200 // Receive ring buffer overflow
-#define UART_NO_DATA          0x0100 // No receive data available
+#define UART_RX_BUFFER_SIZE 128 // 128 bytes size
+#define UART_TX_BUFFER_SIZE	128	// 128 bytes size
 
 #define UART_RX_BUFFER_MASK (UART_RX_BUFFER_SIZE - 1) // Used to mask received data within 0 and (buffer size - 1)
 #define UART_TX_BUFFER_MASK (UART_TX_BUFFER_SIZE - 1) // Used to mask transmitted data within 0 and (buffer size - 1)
@@ -127,8 +124,8 @@ UBRRL/UBRRH - USART Baud Rate Registers
 #endif
 
 #if defined(__AVR_ATmega8__)  || defined(__AVR_ATmega8A__) \
- 	|| defined(__AVR_ATmega16__) || defined(__AVR_ATmega16A__) \
-	|| defined(__AVR_ATmega32__) || defined(__AVR_ATmega32A__)
+ || defined(__AVR_ATmega16__) || defined(__AVR_ATmega16A__) \
+ || defined(__AVR_ATmega32__) || defined(__AVR_ATmega32A__)
 	#define ATMEGA_USART
 	#define UART0_RX_INTERRUPT USART_RXC_vect
 	#define UART0_TX_INTERRUPT USART_UDRE_vect
@@ -136,13 +133,10 @@ UBRRL/UBRRH - USART Baud Rate Registers
 	#define UART0_STATUS	   UCSRA
 	#define UART0_CONTROL	   UCSRB
 	#define UART0_UDRIE		   UDRIE
-#elif defined(__AVR_ATmega48__) \
-    || defined(__AVR_ATmega88__) \
-    || defined(__AVR_ATmega168__) \
-    || defined(__AVR_ATmega48P__) \
-    || defined(__AVR_ATmega88P__) \
-    || defined(__AVR_ATmega168P__) \
-    || defined(__AVR_ATmega328P__) 
+#elif defined(__AVR_ATmega48__) || defined(__AVR_ATmega48P__) \
+   || defined(__AVR_ATmega88__) || defined(__AVR_ATmega88P__) \
+   || defined(__AVR_ATmega168__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega168PA__)\
+   || defined(__AVR_ATmega328P__) 
 	#define ATMEGA_USART0
 	#define UART0_RX_INTERRUPT  USART_RX_vect
 	#define UART0_TX_INTERRUPT  USART_UDRE_vect
@@ -157,11 +151,8 @@ UBRRL/UBRRH - USART Baud Rate Registers
 #if defined(ATMEGA_USART) || defined(ATMEGA_USART0)
 	static volatile uint8_t UART_RX_BUFFER[UART_RX_BUFFER_SIZE];
 	static volatile uint8_t UART_TX_BUFFER[UART_TX_BUFFER_SIZE];
-	static volatile uint8_t UART_RX_HEAD;
-	static volatile uint8_t UART_RX_TAIL;
-	static volatile uint8_t UART_TX_HEAD;
-	static volatile uint8_t UART_TX_TAIL;
-	static volatile uint8_t UART_LAST_RX_ERROR;
+	static volatile uint8_t UART_RX_HEAD, UART_RX_TAIL;
+	static volatile uint8_t UART_TX_HEAD, UART_TX_TAIL;
 #endif
 
 #if defined(ATMEGA_USART) || defined(ATMEGA_USART0)
@@ -169,15 +160,15 @@ UBRRL/UBRRH - USART Baud Rate Registers
 /*********************
 Glossary of functions
 *********************/
-void		   UART0_Begin	    (uint16_t _baudrate);
-uint16_t	   UART0_Available  (void);
-void		   UART0_Flush	    (void);
-void		   UART0_Send_Char  (uint8_t _data);
-void		   UART0_Send_String(const char* _data);
-uint8_t		   UART0_Read_Char  (void);
-uint8_t		   UART0_Read_String(char* _string);
-static char*   _strncat		    (char* _destination, const char* _source, size_t _n);
-static uint8_t _strlen		    (char* _string);
+void     UART_begin	   (uint32_t _baudrate);
+uint16_t UART_available(void);
+void     UART_flush	   (void);
+void     UART_printf   (char* format, ...);
+static void print(const char* s);
+static void send (const char c);
+
+//uint8_t		   UART_Read_Char  (void);
+//uint8_t		   UART_Read_String(char* _string);
 
 /************************
 Function: Interrupt Service Routines
@@ -187,37 +178,21 @@ Return:   None
 ************************/
 ISR (UART0_RX_INTERRUPT)
 {
-	uint16_t _tempHead;
+	uint8_t _tempHead;
 	uint8_t _data;
-	uint8_t _usr;
-	uint8_t _lastRXError;
 	
 	#if defined(ATMEGA_USART) || defined(ATMEGA_USART0)
-	_usr  = UART0_STATUS;
 	_data = UART0_DATA;
-	#endif
-	
-	#if defined(ATMEGA_USART)
-	_lastRXError = ((_usr & (1 << FE)) | (1 << DOR));
-	#elif defined(ATMEGA_USART0)
-	_lastRXError = ((_usr & (1 << FE0)) | (1 << DOR0));
 	#endif
 	// Calculate buffer index
 	_tempHead = (UART_RX_HEAD + 1) & UART_RX_BUFFER_MASK;
 	
-	// Error: Buffer overflow
-	if (_tempHead == UART_RX_TAIL)
-		_lastRXError = UART_BUFFER_OVERFLOW >> 8;
-	else
-	{
-		UART_RX_HEAD = _tempHead;
-		UART_RX_BUFFER[_tempHead] = _data;
-	}
-	UART_LAST_RX_ERROR = _lastRXError;
+	UART_RX_HEAD = _tempHead;
+	UART_RX_BUFFER[_tempHead] = _data;
 }
 ISR (UART0_TX_INTERRUPT)
 {
-	uint16_t _tempTail;
+	uint8_t _tempTail;
 	
 	if (UART_TX_HEAD != UART_TX_TAIL)
 	{
@@ -238,12 +213,12 @@ ISR (UART0_TX_INTERRUPT)
 }
 
 /*****************************************
-Function: UART0_Begin(baud)
+Function: begin()
 Purpose:  Initialize UART and set baud rate
 Input:    Baud rate: 9600, 115200, etc.
 Return:   None
 *****************************************/
-void UART0_Begin(uint16_t _baudrate)
+void UART_begin(uint32_t _baudrate)
 {
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
 	{
@@ -278,28 +253,28 @@ void UART0_Begin(uint16_t _baudrate)
 }
 
 /***************************************************************
-Function: UART0_Available()
+Function: available()
 Purpose:  Get the number of bytes waiting in the receiver buffer
 Input:    None
 Return:   Number of bytes waiting in the receiver buffer
 ***************************************************************/
-uint16_t UART0_Available(void)
+uint16_t UART_available(void)
 {
-	uint16_t _ret;
+	uint8_t _ret;
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
 	{
 		_ret = (UART_RX_BUFFER_SIZE + UART_RX_HEAD - UART_RX_TAIL) & UART_RX_BUFFER_MASK;
 	}
-return _ret;
+	return _ret;
 }
 
 /***************************************************
-Function: UART0_Flush()
+Function: flush()
 Purpose:  Flush bytes waiting in the receiver buffer
 Input:    None
 Return:   None
 ***************************************************/
-void UART0_Flush(void)
+void UART0_flush(void)
 {
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
 	{
@@ -307,38 +282,54 @@ void UART0_Flush(void)
 	}
 }
 
-/**********************************
-Function: UART0_Send_Char();
-Purpose:  Send char to ring buffer
-Input:    Data to be sent
+/***************************************************
+Function: printf()
+Purpose:  Printf emulation for UART
+Input:    Format, arguments, etc.
 Return:   None
-**********************************/
-void UART0_Send_Char(uint8_t _data)
+***************************************************/
+void UART_printf(char* format, ...)
 {
-	uint16_t _tempHead;
+	char buffer[UART_RX_BUFFER_SIZE];
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, UART_RX_BUFFER_SIZE, format, args);
+	va_end(args);
+	print(buffer);
+}
+
+/***************************************************
+Function: print()
+Purpose:  Static handler for printf
+Input:    Pointer to char
+Return:   None
+***************************************************/
+static void print(const char* s)
+{
+	while (*s)
+		send(*s++);
+}
+
+/***************************************************
+Function: send()
+Purpose:  Static handler for print
+Input:    Char to be sent
+Return:   None
+***************************************************/
+static void send(const char c)
+{
+	uint8_t _tempHead;
 	_tempHead = (UART_TX_HEAD + 1) & UART_TX_BUFFER_MASK;
 	// Wait for free space in buffer
 	while (_tempHead == UART_TX_TAIL);
 	
-	UART_TX_BUFFER[_tempHead] = _data;
+	UART_TX_BUFFER[_tempHead] = c;
 	UART_TX_HEAD = _tempHead;
 
 	// Enable UDRE interrupts
 	#if defined(ATMEGA_USART) || defined(ATMEGA_USART0)
-		UART0_CONTROL |= (1 << UART0_UDRIE);
+	UART0_CONTROL |= (1 << UART0_UDRIE);
 	#endif
-}
-
-/***********************************
-Function: UART0_Send_String
-Purpose:  Send string to ring buffer
-Input:    Data to be sent
-Return:   None
-***********************************/
-void UART0_Send_String(const char* _data)
-{
-	while (*_data) // lmao what is dis??
-		UART0_Send_Char(*_data++);
 }
 
 /************************************
@@ -347,9 +338,10 @@ Purpose:  Read char from ring buffer
 Input:    None
 Return:   Data to be read
 ************************************/
+/*
 uint8_t UART0_Read_Char(void)
 {
-	uint16_t _tempTail;
+	uint8_t _tempTail;
 	uint8_t _data;
 	
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -362,7 +354,7 @@ uint8_t UART0_Read_Char(void)
 	UART_RX_TAIL = _tempTail;
 	_data = UART_RX_BUFFER[_tempTail];
 	return _data;
-}
+}*/
 
 /****************************************
 Function: UART0_Read_String
@@ -370,21 +362,23 @@ Purpose:  Read string from ring buffer
 Input:    String that holds the read data
 Return:   State of data that's read
 ****************************************/
+/*
 uint8_t UART0_Read_String(char* _string)
 {
-	while (UART0_Available() > 0)
+	while (UART_available() > 0)
 	{
 		char _byte = UART0_Read_Char();
 		if (_byte != '>') _strncat(_string, &_byte, 1);
 		else return 1;
 	}
 	return 0;
-}
+}*/
 
 /***************
 Inline functions
 ***************/
 
+/*
 static char* _strncat(char* _destination, const char* _source, size_t _n)
 {
 	char* _p = _destination + _strlen(_destination); // Point to the end of the destination string
@@ -399,7 +393,7 @@ static uint8_t _strlen(char* _string)
 	uint8_t _len = 0;                      // Make sure length is 0 by default
 	for (; _string[_len] != '\0'; _len++); // While not a null char increase the length
 	return _len;                           // Return the length
-}
+}*/
 
 #endif
 #endif
