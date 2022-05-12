@@ -2,8 +2,6 @@
 #define TIMERS_H
 #include <avr/interrupt.h>
 #include <util/atomic.h>
-#include <util/delay.h>
-#include <avr/io.h>
 
 /*
 F_TIMER = F_CPU / PRESCALER
@@ -12,7 +10,7 @@ TOTAL = TICK * MAX_VALUE_OF_TIMER
 OVERFLOW_COUNT = PERIOD_TO_OVERFLOW * TICK
 
 // EXAMPLE
-F_TIMER = 16000000 Hz / 1024 = 15.625 Hz | 16000000 Hz / 8 = 2.000.000 Hz
+F_TIMER = 16000000 Hz / 1024 = 15625 Hz | 16000000 Hz / 8 = 2000000 Hz
 TICK = 1 / 15.625 = 0.000064 s = 64 us   | 1 / 2.000.000 = 0.0000005 s = 0.5 us = 500 ns
 TOTAL = 0.000064 s * 65536 = 4.194304 s  | 0.0000005 * 65536 = 0.032768 s
 To overflow every 1 ms we need 15.625    | 0.001 / 0.0000005 = 2000
@@ -80,13 +78,12 @@ ISR (TIMER1_COMPA_vect)
 	_timer1Counter++;
 }
 
-void TIMER1_begin(uint8_t milliseconds)
+void TIMER1_begin(uint8_t millisecond)
 {
 	// Clear Timer on Compare && Prescaler F_CPU / 1024
 	TCCR1B |= (1 << WGM12) | (1 << CS10);
 	// Set the value of overflowing
-	OCR1A = (milliseconds / 1000.) / (1. / F_CPU);
-	//OCR1A = (F_CPU / 1000) / 1024;
+	OCR1A = ((millisecond * F_CPU) / 1000) / 1;
 	// Enable the compare match interrupt
 	TIMSK |= (1 << OCIE1A);
 }

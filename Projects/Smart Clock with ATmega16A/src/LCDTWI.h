@@ -1,8 +1,9 @@
 #ifndef LCDTWI_H
 #define LCDTWI_H
-#include <stdarg.h>
-#include <stdio.h>
 #include "PCF8574.h"
+#include <stdarg.h>
+#include <util/delay.h>
+
 
 // LCD commands
 // ******************************************************************************************************************
@@ -72,9 +73,9 @@ void LCDTWI_home       (void);
 void LCDTWI_clear      (void);
 void LCDTWI_setCursor  (uint8_t cols, uint8_t rows);
 void LCDTWI_printf     (char* format, ...);
-static void print  (char* s);
-static void command(uint8_t command);
-static void data   (char data);
+static void LCDTWI_print  (char* s);
+static void LCDTWI_command(uint8_t command);
+static void LCDTWI_data   (char data);
 
 /*********************************************
 Function: begin()
@@ -87,11 +88,11 @@ void LCDTWI_begin(uint8_t address, uint8_t cols, uint8_t rows)
 	_lcdTWI.address = address; _lcdTWI.cols = cols - 1; _lcdTWI.rows = rows - 1;
 	_delay_ms(15);
 	PCF8574_begin(_lcdTWI.address);
-	_delay_ms(4.1); command(0x03); _delay_ms(4.1); command(0x03); _delay_ms(4.1); command(0x03); _delay_ms(4.1); command(0x02);
+	_delay_ms(4.1); LCDTWI_command(0x03); _delay_ms(4.1); LCDTWI_command(0x03); _delay_ms(4.1); LCDTWI_command(0x03); _delay_ms(4.1); LCDTWI_command(0x02);
 	_lcdTWI.displayFunction = (rows == 1) ? (_lcdTWI.displayFunction | _1_LINE) : (_lcdTWI.displayFunction | _2_LINE);
-	_lcdTWI.displayFunction |= _5x8_DOTS | _4_BIT_MODE;                    command(FUNCTION_SET    | _lcdTWI.displayFunction);
-	_lcdTWI.displayControl  |= DISPLAY_ON | CURSOR_OFF | CURSOR_BLINK_OFF; command(DISPLAY_CONTROL | _lcdTWI.displayControl);
-	_lcdTWI.displayMode     |= DECREMENT_DDRAM | SHIFT_LEFT;               command(ENTRY_MODE_SET  | _lcdTWI.displayMode);
+	_lcdTWI.displayFunction |= _5x8_DOTS | _4_BIT_MODE;                    LCDTWI_command(FUNCTION_SET    | _lcdTWI.displayFunction);
+	_lcdTWI.displayControl  |= DISPLAY_ON | CURSOR_OFF | CURSOR_BLINK_OFF; LCDTWI_command(DISPLAY_CONTROL | _lcdTWI.displayControl);
+	_lcdTWI.displayMode     |= DECREMENT_DDRAM | SHIFT_LEFT;               LCDTWI_command(ENTRY_MODE_SET  | _lcdTWI.displayMode);
 	LCDTWI_clear();
 	LCDTWI_home();
 }
@@ -104,7 +105,7 @@ Return:   None
 *********************************************/
 void LCDTWI_home(void)
 {
-	command(RETURN_HOME);
+	LCDTWI_command(RETURN_HOME);
 }
 
 /*********************************************
@@ -115,7 +116,7 @@ Return:   None
 *********************************************/
 void LCDTWI_clear(void)
 {
-	command(CLEAR_DISPLAY);
+	LCDTWI_command(CLEAR_DISPLAY);
 }
 
 /*********************************************
@@ -129,7 +130,7 @@ void LCDTWI_setCursor(uint8_t cols, uint8_t rows)
 	const uint8_t rowOffsets[4] = {0x00, 0x40, 0x14, 0x54};
 	cols = (cols > _lcdTWI.cols) ? _lcdTWI.cols : cols;
 	rows = (rows > _lcdTWI.rows) ? _lcdTWI.rows : rows;
-	command(SET_DDRAM_ADDR | (cols + rowOffsets[rows]));
+	LCDTWI_command(SET_DDRAM_ADDR | (cols + rowOffsets[rows]));
 }
 
 /*********************************************
@@ -145,7 +146,7 @@ void LCDTWI_printf(char* format, ...)
 	va_start(args, format);
 	vsnprintf(buffer, _lcdTWI.cols + 1, format, args);
 	va_end(args);
-	print(buffer);
+	LCDTWI_print(buffer);
 }
 
 /*********************************************
@@ -154,19 +155,19 @@ Purpose:  Print a char array onto LCD
 Input:    Char array
 Return:   None
 *********************************************/
-static void print(char* s)
+static void LCDTWI_print(char* s)
 {
 	while (*s)
-		data(*s++);
+		LCDTWI_data(*s++);
 }
 
 /*********************************************
-Function: command()
+Function: LCDTWI_command()
 Purpose:  Send command to LCD
 Input:    command
 Return:   None
 *********************************************/
-static void command(uint8_t command)
+static void LCDTWI_command(uint8_t command)
 {
 	// Top nibble
 	_lcdTWI.buffer = command & 0xF0;                // Copy data into buffer
@@ -191,12 +192,12 @@ static void command(uint8_t command)
 }
 
 /*********************************************
-Function: data()
+Function: LCDTWI_data()
 Purpose:  Send data to LCD
 Input:    data
 Return:   None
 *********************************************/
-static void data(char data)
+static void LCDTWI_data(char data)
 {
 	// Top nibble
 	_lcdTWI.buffer = data & 0xF0;                   // Copy data into buffer

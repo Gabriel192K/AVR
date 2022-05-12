@@ -110,8 +110,8 @@ UBRRL/UBRRH - USART Baud Rate Registers
 |                              UBRRL[7:0]                               |
 ********************************************************************************************************************/
 
-#define UART_RX_BUFFER_SIZE 128 // 128 bytes size
-#define UART_TX_BUFFER_SIZE 128 // 128 bytes size
+#define UART_RX_BUFFER_SIZE ((uint8_t)128) // 128 bytes size
+#define UART_TX_BUFFER_SIZE ((uint8_t)128) // 128 bytes size
 
 #define UART_RX_BUFFER_MASK (UART_RX_BUFFER_SIZE - 1) // Used to mask received data within 0 and (buffer size - 1)
 #define UART_TX_BUFFER_MASK (UART_TX_BUFFER_SIZE - 1) // Used to mask transmitted data within 0 and (buffer size - 1)
